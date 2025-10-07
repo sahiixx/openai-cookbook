@@ -15,6 +15,16 @@ Most code examples are written in Python, though the concepts can be applied in 
 
 For other useful tools, guides and courses, check out these [related resources from around the web](https://cookbook.openai.com/related_resources).
 
+## Building and Validating
+
+To build and validate the cookbook locally, see the [Build Guide](BUILD.md).
+
+Quick start:
+```bash
+make install  # Install build dependencies
+make build    # Build and validate
+```
+
 ## License
 
 MIT License
