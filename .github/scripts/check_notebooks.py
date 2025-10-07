@@ -1,8 +1,16 @@
+import argparse
 import subprocess
 import sys
 from pathlib import Path
 
 import nbformat
+
+
+def get_all_notebooks(root_dir: Path = Path(".")) -> list[Path]:
+    """
+    Returns a list of all notebook paths in the repository.
+    """
+    return list(root_dir.glob("**/*.ipynb"))
 
 
 def get_changed_notebooks(base_ref: str = "origin/main") -> list[Path]:
@@ -35,16 +43,33 @@ def is_valid_notebook(path: Path) -> bool:
 
 def main() -> None:
     """
-    Main function to validate the format of changed notebooks.
+    Main function to validate the format of notebooks.
     """
-    changed_notebooks = get_changed_notebooks()
-    if not changed_notebooks:
-        print("No changed .ipynb files to validate.")
-        sys.exit(0)
+    parser = argparse.ArgumentParser(description="Validate Jupyter notebooks")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Validate all notebooks instead of only changed ones",
+    )
+    parser.add_argument(
+        "--base-ref",
+        default="origin/main",
+        help="Base reference for git diff (default: origin/main)",
+    )
+    args = parser.parse_args()
 
-    print(f"Validating {len(changed_notebooks)} notebook(s)...")
+    if args.all:
+        notebooks = get_all_notebooks()
+        print(f"Validating all {len(notebooks)} notebook(s)...")
+    else:
+        notebooks = get_changed_notebooks(args.base_ref)
+        if not notebooks:
+            print("No changed .ipynb files to validate.")
+            sys.exit(0)
+        print(f"Validating {len(notebooks)} changed notebook(s)...")
+
     errors = 0
-    for path in changed_notebooks:
+    for path in notebooks:
         if not path.exists():
             continue  # skip deleted files
         if not is_valid_notebook(path):
@@ -54,7 +79,7 @@ def main() -> None:
         print(f"{errors} invalid notebook(s) found.")
         sys.exit(1)
     else:
-        print("All changed notebooks are valid.")
+        print("All notebooks are valid.")
 
 
 if __name__ == "__main__":
